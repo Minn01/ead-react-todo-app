@@ -1,27 +1,11 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:18-bullseye'
-            args '-u root'
-        }
-    }
+    agent any
 
     environment {
         CI = 'true'
-        PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true'
-        PUPPETEER_EXECUTABLE_PATH = '/usr/bin/chromium'
     }
 
     stages {
-
-        stage('Install Chromium') {
-            steps {
-                sh '''
-                    apt-get update
-                    apt-get install -y chromium
-                '''
-            }
-        }
 
         stage('Install Dependencies') {
             steps {
@@ -45,12 +29,13 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'docker-hub-credentials',
-                    usernameVariable: 'DOCKER_USERNAME',
-                    passwordVariable: 'DOCKER_PASSWORD'
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
                 )]) {
-
-                    sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
-                    sh 'docker push minn01/todo-app:latest'
+                    sh '''
+                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                    docker push minn01/todo-app:latest
+                    '''
                 }
             }
         }
