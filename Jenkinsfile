@@ -43,12 +43,17 @@ pipeline {
         }
 
         stage('Docker Push') {
-            agent any
             steps {
-                sh '''
-                docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-                docker push minnthant/todo-app
-                '''
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker-hub-credentials',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    docker push minnthant/todo-app
+                    '''
+                }
             }
         }
     }
