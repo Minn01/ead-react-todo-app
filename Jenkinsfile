@@ -38,7 +38,7 @@ pipeline {
         stage('Docker Build') {
             agent any
             steps {
-                sh 'docker build -t minnthant/todo-app .'
+                sh 'docker build -t minn01/todo-app .'
             }
         }
 
@@ -51,7 +51,7 @@ pipeline {
                 )]) {
                     sh '''
                     echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-                    docker push minnthant/todo-app
+                    docker push minn01/todo-app
                     '''
                 }
             }
