@@ -1,18 +1,15 @@
 pipeline {
-    agent {
-        docker {
-            image 'node:18-bullseye'
-            args '-u root'
-        }
-    }
-
-    environment {
-        CI = 'true'
-    }
+    agent any
 
     stages {
 
         stage('Install Dependencies') {
+            agent {
+                docker {
+                    image 'node:18-bullseye'
+                    args '-u root'
+                }
+            }
             steps {
                 sh '''
                 apt-get update
@@ -24,31 +21,32 @@ pipeline {
         }
 
         stage('Test') {
+            agent {
+                docker {
+                    image 'node:18-bullseye'
+                    args '-u root'
+                }
+            }
             steps {
                 sh 'npm test'
             }
         }
 
         stage('Docker Build') {
+            agent any
             steps {
                 sh 'docker build -t minnthant/todo-app .'
             }
         }
 
         stage('Docker Push') {
+            agent any
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'docker-hub-credentials',
-                    usernameVariable: 'DOCKER_USERNAME',
-                    passwordVariable: 'DOCKER_PASSWORD'
-                )]) {
-                    sh '''
-                    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-                    docker push minnthant/todo-app
-                    '''
-                }
+                sh '''
+                docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+                docker push minnthant/todo-app
+                '''
             }
         }
-
     }
 }
