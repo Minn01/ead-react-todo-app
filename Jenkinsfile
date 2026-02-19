@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         CI = 'true'
+        PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true'
     }
 
     stages {
