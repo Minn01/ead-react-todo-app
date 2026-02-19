@@ -1,40 +1,37 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:18-bullseye'
+            args '-u root'
+        }
+    }
 
     environment {
         CI = 'true'
-        PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true'
     }
 
     stages {
 
         stage('Install Dependencies') {
-            agent {
-                docker {
-                    image 'node:18-bullseye'
-                    args '-u root'
-                }
-            }
             steps {
-                sh 'npm install'
+                sh '''
+                apt-get update
+                apt-get install -y python3 make g++ build-essential
+                ln -sf /usr/bin/python3 /usr/bin/python
+                npm install
+                '''
             }
         }
 
         stage('Test') {
-            agent {
-                docker {
-                    image 'node:18-bullseye'
-                    args '-u root'
-                }
-            }
             steps {
-                sh 'npm test -- --watchAll=false'
+                sh 'npm test'
             }
         }
 
         stage('Docker Build') {
             steps {
-                sh 'docker build -t minn01/todo-app:latest .'
+                sh 'docker build -t minnthant/todo-app .'
             }
         }
 
@@ -42,12 +39,12 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'docker-hub-credentials',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
+                    usernameVariable: 'DOCKER_USERNAME',
+                    passwordVariable: 'DOCKER_PASSWORD'
                 )]) {
                     sh '''
-                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                    docker push minn01/todo-app:latest
+                    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                    docker push minnthant/todo-app
                     '''
                 }
             }
