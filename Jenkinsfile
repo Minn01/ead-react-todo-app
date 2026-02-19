@@ -8,12 +8,24 @@ pipeline {
     stages {
 
         stage('Install Dependencies') {
+            agent {
+                docker {
+                    image 'node:18-bullseye'
+                    args '-u root'
+                }
+            }
             steps {
                 sh 'npm install'
             }
         }
 
         stage('Test') {
+            agent {
+                docker {
+                    image 'node:18-bullseye'
+                    args '-u root'
+                }
+            }
             steps {
                 sh 'npm test -- --watchAll=false'
             }
