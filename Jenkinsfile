@@ -1,13 +1,14 @@
 pipeline {
     agent {
         docker {
-            image 'node:18'
+            image 'ghcr.io/puppeteer/puppeteer:latest'
             args '-u root'
         }
     }
 
     environment {
         CI = 'true'
+        PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true'
     }
 
     stages {
