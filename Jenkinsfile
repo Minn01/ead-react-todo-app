@@ -10,6 +10,9 @@ pipeline {
                     args '-u root'
                 }
             }
+            environment {
+                PUPPETEER_SKIP_DOWNLOAD = 'true'
+            }
             steps {
                 sh '''
                 apt-get update
