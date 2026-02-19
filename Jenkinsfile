@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'ghcr.io/puppeteer/puppeteer:latest'
+            image 'node:18-bullseye'
             args '-u root'
         }
     }
@@ -9,11 +9,21 @@ pipeline {
     environment {
         CI = 'true'
         PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true'
+        PUPPETEER_EXECUTABLE_PATH = '/usr/bin/chromium'
     }
 
     stages {
 
-        stage('Install') {
+        stage('Install Chromium') {
+            steps {
+                sh '''
+                    apt-get update
+                    apt-get install -y chromium
+                '''
+            }
+        }
+
+        stage('Install Dependencies') {
             steps {
                 sh 'npm install'
             }
@@ -44,5 +54,6 @@ pipeline {
                 }
             }
         }
+
     }
 }
