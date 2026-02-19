@@ -1,10 +1,13 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'node:18'
+            args '-u root'
+        }
+    }
 
     environment {
-        DOCKER_HUB_USER = 'minn01'
-        IMAGE_NAME = 'todo-app'
-        DOCKER_HUB_CREDS = 'docker-hub-credentials'
+        CI = 'true'
     }
 
     stages {
@@ -17,29 +20,28 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh 'npm test'
+                sh 'npm test -- --watchAll=false'
             }
         }
 
         stage('Docker Build') {
             steps {
-                sh 'docker build -t ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest .'
+                sh 'docker build -t minn01/todo-app:latest .'
             }
         }
 
         stage('Docker Push') {
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: "${DOCKER_HUB_CREDS}",
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
+                    credentialsId: 'docker-hub-credentials',
+                    usernameVariable: 'DOCKER_USERNAME',
+                    passwordVariable: 'DOCKER_PASSWORD'
                 )]) {
 
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-                    sh 'docker push ${DOCKER_HUB_USER}/${IMAGE_NAME}:latest'
+                    sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                    sh 'docker push minn01/todo-app:latest'
                 }
             }
         }
-
     }
 }
